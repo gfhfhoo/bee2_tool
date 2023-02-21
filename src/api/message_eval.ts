@@ -7,7 +7,7 @@ emitter.on("ROOM_ID", (e: any) => {
 
 emitter.on("DANMU_MSG", (e: any) => {
     const data = e.data.info;
-    console.log(data)
+    // console.log(data)
     const danmu: INFO_DANMU = {
         uid: data[2][0],
         uname: data[2][1],

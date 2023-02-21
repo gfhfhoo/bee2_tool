@@ -152,7 +152,7 @@ async function onDanmakuComing(data: INFO_DANMU) {
 
     // 设置弹幕OBJ
     let res = userManager.calDanmakuAndWeight(data.uid);
-    console.log(res, data.uid);
+    // console.log(res, data.uid);
     let obj = {
       uid: data.uid,
       msg: data.msg,
