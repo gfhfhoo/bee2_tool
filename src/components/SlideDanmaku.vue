@@ -88,8 +88,8 @@ defineExpose({
 }
 
 #danmaku_window, #danmaku_wrapper {
-  //background: #1231cd;
-  background: #000000;
+  background: #1231cd;
+  //background: #000000;
   user-select: none;
 }
 
