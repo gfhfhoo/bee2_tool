@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        #app {
+            flex: 1;
+        }
+
+        .titlebar {
+            background: #000000;
+            user-select: none;
+            -webkit-user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            top: 0;
+            left: 0;
+            right: 0;
+            cursor: default;
+            padding: 5px 0;
+            box-sizing: border-box;
+        }
+
+        .titlebar p {
+            margin: 0;
+            padding: 0;
+            color: white;
+            font-family: "PingFang SC", "Microsoft Sans Serif", "Fira Code", serif;
+            font-weight: bold;
+        }
+
+        .titlebar #window_close {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div data-tauri-drag-region class="titlebar">
+    <p data-tauri-drag-region>投票统计</p>
+    <svg id="window_close" viewBox="0 0 1024 1024" width="20" height="20">
+        <path d="M576 512l277.333333 277.333333-64 64-277.333333-277.333333L234.666667 853.333333 170.666667 789.333333l277.333333-277.333333L170.666667 234.666667 234.666667 170.666667l277.333333 277.333333L789.333333 170.666667 853.333333 234.666667 576 512z"
+              fill="#fff"></path>
+    </svg>
+</div>
+<div id="app"></div>
+<script type="module" src="/src/views/stat.ts"></script>
+</body>
+</html>
