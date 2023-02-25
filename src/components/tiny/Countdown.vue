@@ -11,7 +11,7 @@
 import {ref, watch} from "vue";
 
 const props = defineProps(['max', "control", 'radius']);
-const emit = defineEmits(["update:onchange", "update:onend"])
+const emit = defineEmits(["onchange", "onend"])
 
 const _now = ref(props.max);
 
@@ -33,10 +33,10 @@ function set() {
 
 watch(_now, (val: number) => {
   if (val !== 0) {
-    emit("update:onchange", val);
+    emit("onchange", val);
   } else {
     clear();
-    emit("update:onend");
+    emit("onend", null);
   }
 })
 

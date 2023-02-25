@@ -11,7 +11,7 @@
            :style="{width: `${width}px`,height: `${height}px`}">
         <span>{{ tipBoardText }}</span>
       </div>
-      <div class="legend">
+      <div class="legend" v-show="tipBoardText === '等待弹幕'">
         <marquee-text class="marquee" :repeat="5" :key="legend.toString()">
           <span>投票关键字：{{ KeysStr }}</span>
         </marquee-text>
