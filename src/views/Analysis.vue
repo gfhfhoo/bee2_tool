@@ -55,7 +55,7 @@ const _l3 = [];
 let chart = null;
 
 onMounted(() => {
-  const ctx = document.getElementById("trendy");
+  const ctx: any = document.getElementById("trendy");
   chart = new Chart(ctx, {
     type: 'line',
     data: {
@@ -105,9 +105,9 @@ watch([
   if (bool2 && _l2.length > 0) chart.data.datasets[1].data.push(calZScore(_l2, v2));
   if (bool3 && _l3.length > 0) chart.data.datasets[2].data.push(calZScore(_l3, v3));
 
-  if(chart.data.datasets[0].data.length>75) chart.data.datasets[0].data = chart.data.datasets[0].data.slice(-75);
-  if(chart.data.datasets[1].data.length>75) chart.data.datasets[1].data = chart.data.datasets[1].data.slice(-75);
-  if(chart.data.datasets[2].data.length>75) chart.data.datasets[2].data = chart.data.datasets[2].data.slice(-75);
+  if (chart.data.datasets[0].data.length > 75) chart.data.datasets[0].data = chart.data.datasets[0].data.slice(-75);
+  if (chart.data.datasets[1].data.length > 75) chart.data.datasets[1].data = chart.data.datasets[1].data.slice(-75);
+  if (chart.data.datasets[2].data.length > 75) chart.data.datasets[2].data = chart.data.datasets[2].data.slice(-75);
 
   _l1.push(v1);
   _l2.push(v2);

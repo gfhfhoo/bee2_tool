@@ -12,7 +12,7 @@
         <span>{{ tipBoardText }}</span>
       </div>
       <div class="legend">
-        <marquee-text class="marquee" :repeat="5" :key="legend">
+        <marquee-text class="marquee" :repeat="5" :key="legend.toString()">
           <span>投票关键字：{{ KeysStr }}</span>
         </marquee-text>
       </div>

@@ -36,7 +36,7 @@ watch(_now, (val: number) => {
     emit("update:onchange", val);
   } else {
     clear();
-    emit("onend");
+    emit("update:onend");
   }
 })
 
