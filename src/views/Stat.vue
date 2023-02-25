@@ -97,26 +97,6 @@ onMounted(() => {
     } else {
       // 无倒计时
     }
-
-    // 设置关键字滚动
-    // document.querySelector(".legend span:nth-child(1)").setAttribute("rollup", '')
-    //
-    // setInterval(() => {
-    //   const show = document.querySelector(".legend span[rollup]")
-    //   const next = document.querySelector(".legend span[rolldown]") || document.querySelector(".legend span:first-child");
-    //   const up = document.querySelector(".legend span[rollhide]")
-    //
-    //   if (up) {
-    //     up.removeAttribute("rollhide");
-    //     up.setAttribute("rolldown", '');
-    //   }
-    //
-    //   show.removeAttribute("rollup")
-    //   show.setAttribute("rollhide", '');
-    //
-    //   next.setAttribute("rollup", '')
-    // }, 1000);
-
   })
 
   listen("stat_stop", () => {
@@ -319,7 +299,6 @@ const KeysStr = computed(() => {
   justify-content: center;
   overflow: hidden;
   user-select: none;
-  //background: #0e1116;
 }
 
 .chart-wrapper {

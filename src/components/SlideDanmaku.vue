@@ -6,13 +6,9 @@
 
 <script setup lang="ts">
 import Danmaku from "danmaku";
-import {createApp, defineComponent, onMounted} from "vue";
-import CaptainDanmaku from "./tiny/CaptainDanmaku.vue";
+import {onMounted} from "vue";
 import {UserProperty} from "../api/types";
-
-const captainEl = defineComponent({
-  extends: CaptainDanmaku
-})
+import CaptainIconUrl from "../assets/icon-l-3.402ac8f.png"
 
 let danmaku: Danmaku;
 
@@ -27,9 +23,14 @@ function captainEmit(msg) {
   danmaku.emit({
     render(): HTMLElement {
       let div = document.createElement("div");
-      createApp(captainEl, {
-        msg: msg
-      }).mount(div)
+      let img = document.createElement("img");
+      let span = document.createElement("span");
+      img.src = CaptainIconUrl;
+      span.innerText = msg;
+      div.setAttribute("class", "danmaku-basic-override danmaku-captain");
+      img.setAttribute("class", "danmaku-icon");
+      div.appendChild(img);
+      div.appendChild(span);
       return div;
     }
   })
@@ -109,6 +110,50 @@ defineExpose({
 }
 
 .danmaku-colorful {
-  color: #c93939 !important;
+  color: #de3f3f !important;
+}
+
+.danmaku-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+
+.danmaku-basic-override {
+  position: relative;
+  color: white;
+  margin-top: 3px;
+  font-size: 20px;
+}
+
+.danmaku-captain {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 5px 10px 5px 10px;
+  box-sizing: border-box;
+  background: linear-gradient(90deg,
+      rgba(240, 163, 93, 1) 0%,
+      rgba(91, 144, 132, 1) 20%,
+      rgba(112, 119, 144, 1) 40%,
+      rgba(112, 98, 184, 1) 60%,
+      rgba(171, 85, 116, 1) 80%,
+      rgba(240, 163, 93, 1) 100%
+  );
+  background-size: 200%;
+  border-radius: 8px;
+  animation: rainbow 2s linear infinite;
+}
+
+@keyframes rainbow {
+  0% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 </style>

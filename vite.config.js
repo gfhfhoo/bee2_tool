@@ -14,5 +14,10 @@ export default defineConfig({
         stat: resolve("./stat.html")
       }
     }
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
   }
 })

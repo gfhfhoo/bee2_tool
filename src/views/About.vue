@@ -4,7 +4,7 @@
     <p class="author">作者：clay_ex</p>
     <p>本工具仅限 @觅2 使用</p>
     <p class="version">Ver 0.2.0</p>
-    <p class="update_time">Updated at Feb 21, 2023</p>
+    <p class="update_time">Updated at Feb 25, 2023</p>
   </div>
 </template>
 
