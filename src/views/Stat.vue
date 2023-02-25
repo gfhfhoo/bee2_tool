@@ -1,38 +1,40 @@
 <template>
   <div class="tools">
-    <div class="tip trans-opacity" :style="{opacity: opacity}" v-show="danmaku.length>0">
-      有效计入 {{ count.number.toFixed(0) }} 条
-    </div>
-    <div class="chart-wrapper trans-opacity" :style="{width: `${width}px`,height: `${height}px`,opacity: opacity}">
-      <canvas v-show="isShow" id="chart" :width="width"
-              :height="height"></canvas>
+    <Transition name="opacity">
+      <div class="tip" v-show="danmaku.length>0">
+        有效计入 {{ count.number.toFixed(0) }} 条
+      </div>
+    </Transition>
+    <div class="chart-wrapper" :style="{width: `${width}px`,height: `${height}px`}" v-show="!isEndVoting">
+      <canvas v-show="isShow" id="chart" :width="width" :height="height"></canvas>
       <div v-show="!isShow" class="no_data"
            :style="{width: `${width}px`,height: `${height}px`}">
-        <span class="trans-opacity" :style="{opacity: opacity}">
-          {{ tipBoardText }}
-        </span>
+        <span>{{ tipBoardText }}</span>
+      </div>
+      <div class="legend">
+        <marquee-text class="marquee" :repeat="5" :key="legend">
+          <span>投票关键字：{{ KeysStr }}</span>
+        </marquee-text>
       </div>
     </div>
     <div class="circle">
-      <div :style="{opacity: opacity}" class="text trans" id="countdown-text">
-        {{ countdownNumber }}
-      </div>
-      <Countdown :radius="radius"/>
-      <!--      946-->
+      <Countdown :radius="radius" :max="maxCountdownNum" :control="countDownControl" @onend="onEnd"/>
     </div>
-    <div class="result trans-opacity" :style="{opacity:1-opacity}">
-      <div>
-        <p class="alarm">⏳</p>
-        <span>投票结果</span>
+    <Transition name="opacity">
+      <div class="result" v-show="isEndVoting">
+        <div>
+          <p class="alarm">⏳</p>
+          <span>投票结果</span>
+        </div>
+        <div class="content" v-if="danmaku.length>0">
+          <p class="choice"><span class="percent">{{ mostOfVoteRatio.toFixed(2) }}%</span>的投票选择了...</p>
+          <p class="key_item">{{ mostOfVoteKey }}</p>
+        </div>
+        <div class="content" v-else>
+          <p class="choice">没有人参与本轮投票....</p>
+        </div>
       </div>
-      <div class="content" v-if="danmaku.length>0">
-        <p class="choice"><span class="percent">{{ mostOfVoteRatio.toFixed(2) }}%</span>的投票选择了...</p>
-        <p class="key_item">{{ mostOfVoteKey }}</p>
-      </div>
-      <div class="content" v-else>
-        <p class="choice">没有人参与本轮投票....</p>
-      </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -47,6 +49,7 @@ import {msgToKey} from "../utils/util";
 import {STAT_PAYLOAD} from "../api/types";
 import gsap from "gsap";
 import Countdown from "../components/tiny/Countdown.vue";
+import MarqueeText from 'vue-marquee-text-component'
 
 type K = {
   key: string,
@@ -67,10 +70,11 @@ const legend = ref([]);
 const count = reactive({
   number: 0
 });
-const countdownNumber = ref(60);
+const maxCountdownNum = ref(0);
 const radius = ref(0);
-const timer = ref(null);
-const opacity = ref(1);
+
+const countDownControl = ref(false);
+const isEndVoting = ref(false);
 
 const mostOfVoteRatio = ref(0);
 const mostOfVoteKey = ref("");
@@ -86,14 +90,32 @@ onMounted(() => {
 
   listen("stat_start", (e: any) => {
     tipBoardText.value = "等待弹幕"
-    const num = e.payload.countdown;
-    if (num !== -1) {
+    maxCountdownNum.value = e.payload.countdown;
+    if (maxCountdownNum.value !== -1) {
       // 有倒计时
-      countdownNumber.value = num;
       startCountdown();
     } else {
       // 无倒计时
     }
+
+    // 设置关键字滚动
+    // document.querySelector(".legend span:nth-child(1)").setAttribute("rollup", '')
+    //
+    // setInterval(() => {
+    //   const show = document.querySelector(".legend span[rollup]")
+    //   const next = document.querySelector(".legend span[rolldown]") || document.querySelector(".legend span:first-child");
+    //   const up = document.querySelector(".legend span[rollhide]")
+    //
+    //   if (up) {
+    //     up.removeAttribute("rollhide");
+    //     up.setAttribute("rolldown", '');
+    //   }
+    //
+    //   show.removeAttribute("rollup")
+    //   show.setAttribute("rollhide", '');
+    //
+    //   next.setAttribute("rollup", '')
+    // }, 1000);
 
   })
 
@@ -103,6 +125,7 @@ onMounted(() => {
 
   listen("stat_clear", () => {
     clear();
+    tail();
   })
 
   listen("stat_legend", (e: any) => {
@@ -118,6 +141,7 @@ onMounted(() => {
         key: turnedKey,
         weight: data.weight
       }); // 只有不在已投票名单的才计入
+      emit("stat_update_voting", {data: data.uid});
       calAndSet();
     }
   })
@@ -129,28 +153,23 @@ onMounted(() => {
 
 function startCountdown() {
   // 回收状态
-  opacity.value = 1;
+  // opacity.value = 1;
   backward();
+  countDownControl.value = true;
+  isEndVoting.value = false;
+}
 
-  if (timer.value) {
-    clearInterval(timer.value);
-    timer.value = null;
-  }
-
-  timer.value = setInterval(async () => {
-    countdownNumber.value--;
-    if (countdownNumber.value === -1) {
-      // time up
-      await emit("stat_timeUp", {});
-    }
-  }, 1000);
+async function onEnd() {
+  countDownControl.value = false;
+  isEndVoting.value = true;
+  await emit("stat_timeUp", {});
 }
 
 function tail() {
-  tipBoardText.value = "等待投票开始"
-  clearInterval(timer.value);
-  timer.value = null;
-  opacity.value = 0;
+  countDownControl.value = false;
+  isEndVoting.value = true
+  tipBoardText.value = "等待投票开始";
+  // opacity.value = 0;
   expand();
 }
 
@@ -271,6 +290,14 @@ watch(danmaku, (now) => {
   gsap.to(count, {duration: 0.5, number: Number(now.length) || 0});
 }, {deep: true})
 
+const KeysStr = computed(() => {
+  let str = '';
+  for (let value of legend.value.values()) {
+    str += `[${value}] `
+  }
+  return str
+})
+
 </script>
 
 <style scoped lang="scss">
@@ -292,11 +319,12 @@ watch(danmaku, (now) => {
   justify-content: center;
   overflow: hidden;
   user-select: none;
+  //background: #0e1116;
 }
 
 .chart-wrapper {
   position: relative;
-  z-index: 99969;
+  z-index: 99989;
 }
 
 .tip {
@@ -325,25 +353,7 @@ watch(danmaku, (now) => {
   position: absolute;
   width: 100%;
   height: 100%;
-  z-index: 99999;
-
-  .text {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    height: 70px;
-    width: 70px;
-    left: 5px;
-    top: 5px;
-    font-size: 50px;
-    //background: white;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-    font-family: Helvetica, sans-serif;
-    z-index: 99999;
-  }
+  z-index: 99989;
 }
 
 .result {
@@ -383,6 +393,34 @@ watch(danmaku, (now) => {
     color: #1fe797;
     margin-right: 5px;
   }
+}
+
+.legend {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  user-select: none;
+  z-index: 99989;
+
+  .marquee {
+    width: 100%;
+  }
+
+  span {
+    font-size: .9rem;
+    font-weight: bold;
+    padding-right: 20px;
+  }
+}
+
+.opacity-enter-active,
+.opacity-leave-active {
+  transition: opacity .4s ease-in-out;
+}
+
+.opacity-enter-from,
+.opacity-leave-to {
+  opacity: 0;
 }
 
 </style>

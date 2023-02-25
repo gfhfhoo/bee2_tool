@@ -26,7 +26,7 @@ emitter.on("DANMU_MSG", (e: any) => {
 
 emitter.on("SEND_GIFT", (e: any) => {
     const data = e.data.data;
-    if (data.giftName === '辣条') return;
+    if (data.giftName === '辣条' || data.giftName === '人气票') return;
     let gift: INFO_GIFT = {
         sender: data.uname,
         senderId: data.uid,
@@ -39,4 +39,9 @@ emitter.on("SEND_GIFT", (e: any) => {
 
 emitter.on("SUPER_CHAT_MESSAGE", (e: any) => {
     console.log(e.data.data)
+})
+
+emitter.on("ONLINE_RANK_COUNT", (e: any) => {
+    const data = e.data.data;
+    emitter.emit("APP_ONLINE_COUNT",{data:data.count});
 })

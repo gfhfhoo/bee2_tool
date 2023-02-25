@@ -49,11 +49,13 @@
     </div>
     <div class="filter">
       <div>
-        <div class="filter">
-          <span class="name">倒计时(秒)：</span>
-          <input placeholder="输入一个整数" v-model.number="_countdown" style="width: 50px"/>
-          <button class="btn apply" @click="applyCountdown">应用</button>
-        </div>
+        <span class="name">倒计时(秒)：</span>
+        <input placeholder="输入一个整数" v-model.number="_countdown" style="width: 50px"/>
+        <button class="btn apply" @click="applyCountdown">应用</button>
+      </div>
+    </div>
+    <div class="filter">
+      <div>
         <span class="name">弹幕统计关键字：</span>
         <input placeholder="输入一个关键字" v-model="input" style="width: 110px">
         <button class="btn add_key" @click="addKey">添加</button>

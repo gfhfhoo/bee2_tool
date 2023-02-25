@@ -43,7 +43,6 @@ export const useConfigStore = defineStore('config', {
         }
     },
     actions: {
-
         bindUserSpeechIntervalFn() {
             this.filterManager.addOrSetFilter(new Filter(FILTER.LIMIT_SAME_USER_DANMU, RULE_LIMIT_SAME_USER_DANMU));
         },

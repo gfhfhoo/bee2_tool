@@ -11,6 +11,11 @@ p, span, input, button {
     user-select: none;
 }
 
+ul {
+    margin: 0;
+    padding: 0;
+}
+
 * {
     font-family: "PingFang SC", "微软雅黑", "Microsoft Sans Serif", serif;
 }

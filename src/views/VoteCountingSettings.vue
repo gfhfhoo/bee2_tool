@@ -123,7 +123,7 @@ watch([_price, _messageThresh, _giverWeight, _talkerWeight, _captainWeight],
 }
 
 .config_group {
-  padding: 10px 0;
+  padding: 8px 0;
   border-bottom: 1px solid #d3d3d3;
 }
 

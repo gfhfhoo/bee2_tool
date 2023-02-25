@@ -100,13 +100,15 @@ defineExpose({
 }
 
 .danmaku-basic {
+  position: relative;
   color: white;
   margin-top: 3px;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
+  -webkit-text-stroke: 1px black;
 }
 
 .danmaku-colorful {
-  color: #c93939!important;
+  color: #c93939 !important;
 }
 </style>

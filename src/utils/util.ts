@@ -2,6 +2,25 @@ import {invoke} from "@tauri-apps/api";
 import {CaptainInfo, INFO_DANMU} from "../api/types";
 import {get} from "../api/api";
 
+export const calZScore = (li: number[], x: number): number => {
+    const n = li.length;
+    const mean = li.reduce((a, b) => a + b) / n
+    const std = Math.sqrt(li.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
+    return (x - mean) / std;
+}
+
+export const numberToAbbr = (val: number) => {
+    if (val > 1000) {
+        return (val / 1000).toFixed(1) + 'k';
+    }
+    return val;
+}
+
+export const msToAbbr = (val: number) => {
+    return (val / 1000).toFixed(1) + 's';
+}
+
+
 export const isCaptainByDanmaku = (roomId: number | string, data: INFO_DANMU) => {
     return data.badge.roomId == roomId && data.badge.level >= 21;
 }

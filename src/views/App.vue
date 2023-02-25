@@ -22,7 +22,7 @@
         特殊弹幕配置
       </div>
       <div class="item" :class="{item_clicked: currentTab==='Analysis'}"
-           @click="switchPage('VoteCountingSettings')">
+           @click="switchPage('Analysis')">
         <svg class="svg_icon" viewBox="0 0 985 985">
           <path
               d="M163.7 749.9c-63.9 0-115.9-52-115.9-116s52-116 115.9-116c63.9 0 116 52 116 116s-52.1 116-116 116z m0-161.9c-25.4 0-46 20.6-46 46s20.6 46 46 46 46-20.6 46-46-20.6-46-46-46zM393.1 538.7c-63.9 0-116-52-116-116 0-63.9 52-115.9 116-115.9 63.9 0 115.9 52 115.9 115.9 0.1 63.9-51.9 116-115.9 116z m0-162c-25.4 0-46 20.6-46 46s20.6 46 46 46 46-20.6 46-46c0-25.3-20.6-46-46-46zM859.9 504.4c-63.9 0-115.9-52-115.9-115.9 0-63.9 52-116 115.9-116 63.9 0 116 52 116 116 0 63.9-52 115.9-116 115.9z m0-161.9c-25.4 0-46 20.6-46 46s20.6 46 46 46 46-20.6 46-46-20.6-46-46-46z"
@@ -59,7 +59,7 @@ import {onMounted, ref} from "vue";
 import {BilibiliWebsocket} from "../api/bilibili_websocket";
 import {SlideWindow} from "../utils/slide_window";
 import {appWindow} from "@tauri-apps/api/window";
-import {emit} from "@tauri-apps/api/event";
+import {emit, listen} from "@tauri-apps/api/event";
 import {
   isCaptainByDanmaku,
   msgToKey,
@@ -73,11 +73,14 @@ import MainPage from "./MainPage.vue";
 import VoteCountingSettings from "./VoteCountingSettings.vue";
 import {useConfigStore} from "../store/config";
 import About from "./About.vue";
+import Analysis from "./Analysis.vue";
+import {useStatStore} from "../store/stat";
 
 
 const tab = {
   MainPage,
   VoteCountingSettings,
+  Analysis,
   About
 }
 
@@ -86,6 +89,7 @@ const currentTab = ref("MainPage");
 const danmakuRef = ref<InstanceType<typeof SlideDanmaku> | null>(null);
 
 const store = useConfigStore();
+const statStore = useStatStore();
 
 const slides = new SlideWindow(15);
 
@@ -114,6 +118,11 @@ onMounted(() => {
   }, 1000);
 
 
+  listen("stat_update_voting", (e: any) => {
+    statStore.incAccVotingDanmaku();
+    userManager.incVotingTime(e.data);
+  })
+
   // danmaku msg incoming
 
   emitter.on("APP_DANMU", (e: any) => onDanmakuComing(e.data));
@@ -122,7 +131,12 @@ onMounted(() => {
 
   emitter.on("APP_ROOM_ID_UPDATE", (e: any) => {
     store.roomId = e.data;
-    userManager = new UserManager(store.roomId, store);
+    userManager = new UserManager(store.roomId, store, statStore);
+  })
+
+  emitter.on("APP_ONLINE_COUNT", (e: any) => {
+    statStore.maxOnline = Math.max(statStore.online,e.data);
+    statStore.online = e.data;
   })
 })
 
@@ -166,8 +180,6 @@ async function onDanmakuComing(data: INFO_DANMU) {
       msg: data.msg,
       weight: 1,
     })
-
-    // 特殊弹幕发射
 
     // 普通弹幕不拥挤，发射弹幕
     if (speed.value < 0.75 ||

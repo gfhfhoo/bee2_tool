@@ -1,32 +1,77 @@
 import {UserProperty} from "../api/types";
 
+export interface timestamp {
+    first: number,
+    now: number,
+    diff: number
+}
+
 export class UserManager {
     private store: any;
+    private statStore: any;
     private _roomId: string;
-    private _speechUserMap: Map<number, number>; // K: uid   V: timestamp
+    private _speechUserMap: Map<number, timestamp>; // K: uid   V: timestamp
     private _captainUserMap: Set<number>; // uid[]
     private _giftGiverMap: Map<number, number>; // K: uid   V: acc consumed value
     private _speechTimeMap: Map<number, number>; // K: uid   V: speech times
+    private _votingTimeMap: Map<number, number>; // K: uid   V: acc voting times
+    private _maxVotingTimes: number;
 
 
-    constructor(roomId: string, instance: any) {
+    constructor(roomId: string, instance: any, instance1: any) {
         this._roomId = roomId;
         this.store = instance;
-        this._speechUserMap = new Map<number, number>();
+        this.statStore = instance1;
+        this._maxVotingTimes = 0;
+        this._speechUserMap = new Map<number, timestamp>();
         this._captainUserMap = new Set<number>();
         this._giftGiverMap = new Map<number, number>();
         this._speechTimeMap = new Map<number, number>();
+        this._votingTimeMap = new Map<number, number>();
+    }
+
+    incVotingTime(uid: number) {
+        if (this._votingTimeMap.has(uid)) {
+            const now = this._votingTimeMap.get(uid);
+            this._votingTimeMap.set(uid, now + 1);
+            this._maxVotingTimes = Math.max(now + 1, this._maxVotingTimes);
+        } else this._votingTimeMap.set(uid, 1);
+
+        this.statStore._votingRatio = this._maxVotingTimes * this._votingTimeMap.size / this.statStore.online;
     }
 
     incSpeechTime(uid: number) {
         if (this._speechTimeMap.has(uid)) {
             const now = this._speechTimeMap.get(uid);
             this._speechTimeMap.set(uid, now + 1);
-        } else this._speechTimeMap.set(uid, 1)
+        } else this._speechTimeMap.set(uid, 1);
+
+        let keySum = 0, valueSum = 0;
+        for (let value of this._speechTimeMap.values()) {
+            keySum++;
+            valueSum += value;
+        }
+        this.statStore.speechedNum = keySum;
+        this.statStore.speechedTime = valueSum;
     }
 
     updateSpeechTimestamp(uid: number, timestamp: number) {
-        this._speechUserMap.set(uid, timestamp);
+
+        const rec = this._speechUserMap.get(uid);
+        const last = rec ? rec.first : timestamp;
+        this._speechUserMap.set(uid, {
+            first: last,
+            now: timestamp,
+            diff: timestamp - last,
+        });
+
+        let keySum = 0, valueSum = 0;
+        for (let value of this._speechUserMap.values()) {
+            if (value.diff > 0) keySum++;
+            valueSum += value.diff;
+        }
+
+        this.statStore._avgEffStay = keySum === 0 ? 0 : valueSum / keySum;
     }
 
     hasSpeechRecord(uid: number) {
@@ -34,7 +79,7 @@ export class UserManager {
     }
 
     getSpeechRecord(uid: number) {
-        return this._speechUserMap.get(uid);
+        return this._speechUserMap.get(uid).now;
     }
 
     getSpeechTime(uid: number) {
@@ -50,6 +95,9 @@ export class UserManager {
     }
 
     addGiftRecord(uid: number, value: number) {
+
+        this.statStore._giftValues += value;
+
         if (this._giftGiverMap.has(uid)) {
             const now = this._giftGiverMap.get(uid);
             this._giftGiverMap.set(uid, now + value);
@@ -89,10 +137,6 @@ export class UserManager {
         };
     }
 
-    get speechUserMap(): Map<number, number> {
-        return this._speechUserMap;
-    }
-
     get captainUserMap(): Set<number> {
         return this._captainUserMap;
     }
@@ -105,5 +149,8 @@ export class UserManager {
         return this._speechTimeMap;
     }
 
+    get speechUserMap(): Map<number, timestamp> {
+        return this._speechUserMap;
+    }
 
 }
