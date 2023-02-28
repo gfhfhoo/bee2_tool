@@ -30,7 +30,7 @@ export const useStatStore = defineStore('stat', {
             return numberToAbbr(state._giftValues);
         },
         speechRate: (state) => {
-            if (state.online === 0 || state.speechedNum > state.online) return 0;
+            if (state.maxOnline === 0 || state.speechedNum > state.online) return 0;
             return state.speechedNum * 100 / state.maxOnline;
         },
         avgSpeechTimes: (state) => {

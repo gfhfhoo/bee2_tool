@@ -37,6 +37,17 @@
       </div>
       <div class="config_group btn_group">
         <div class="config_name">
+          <span class="name">高能榜配置</span>
+          <IOSSwitcher v-model:checked="rankingSwitch"></IOSSwitcher>
+        </div>
+        <div class="content">
+          <div class="item">
+            <span>1.当高能榜前10名发言时触发特殊弹幕</span>
+          </div>
+        </div>
+      </div>
+      <div class="config_group btn_group">
+        <div class="config_name">
           <span class="name">留言配置</span>
           <IOSSwitcher v-model:checked="messageSwitch"></IOSSwitcher>
         </div>
@@ -73,10 +84,13 @@ const mainSwitch = ref(false);
 const giftSwitch = ref(false);
 const captainSwitch = ref(false);
 const messageSwitch = ref(false);
+const rankingSwitch = ref(false);
 
-watch([mainSwitch, giftSwitch, captainSwitch, messageSwitch],
-    ([mainSwitch$new, giftSwitch$new, captainSwitch$new, messageSwitch$new]) => {
+watch([mainSwitch, giftSwitch, captainSwitch, messageSwitch, rankingSwitch],
+    ([mainSwitch$new, giftSwitch$new, captainSwitch$new, messageSwitch$new, rankingSwitch$new]) => {
       store.specialDanmakuSwitch = mainSwitch$new;
+      store.rankingSwitch = rankingSwitch$new;
+
       store.giftConfig.status = giftSwitch$new;
       store.messageConfig.status = messageSwitch$new;
       store.captainConfig.status = captainSwitch$new;
@@ -120,6 +134,8 @@ watch([_price, _messageThresh, _giverWeight, _talkerWeight, _captainWeight],
 .container {
   display: flex;
   flex-direction: column;
+  max-height: 330px;
+  overflow: scroll;
 }
 
 .config_group {
@@ -130,8 +146,8 @@ watch([_price, _messageThresh, _giverWeight, _talkerWeight, _captainWeight],
 .config_name {
   display: flex;
   flex-direction: column;
-  align-items: center;
   margin-right: 10px;
+  width: 70px;
 
   .name {
     margin-bottom: 5px;

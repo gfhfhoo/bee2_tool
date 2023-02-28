@@ -1,4 +1,3 @@
-// @ts-ignore
 import {fetch} from '@tauri-apps/api/http';
 
 export const get = async (url: string, params?: any): Promise<any> => {

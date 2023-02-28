@@ -107,9 +107,8 @@ onMounted(() => {
 
 async function startStat() {
   store.isOnStat = true;
-  await emit("stat_clear");
-  await emit("stat_legend", store.keys);
   await emit("stat_start", {countdown: store.countdown});
+  await emit("stat_legend", store.keys);
 }
 
 function stopStat() {
@@ -121,7 +120,7 @@ function stopStat() {
 function clearKeys() {
   store.keys = [];
   store.isOnStat = false;
-  emit("stat_clear");
+  emit("stat_stop", {});
 }
 
 function delKey(idx) {

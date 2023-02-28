@@ -1,7 +1,5 @@
 <template>
   <SlideDanmaku ref="danmakuRef"/>
-  <!--  <span>{{ delay }}</span>-->
-  <!--tab menu-->
   <div class="container">
     <div class="menu">
       <div class="item" :class="{item_clicked: currentTab==='MainPage'}" @click="switchPage('MainPage')">
@@ -47,6 +45,7 @@
       </div>
     </div>
     <div class="view">
+      <span class="test" v-if="currentTab==='MainPage'">弹幕密集度: {{ speed.toFixed(4) }}</span>
       <KeepAlive>
         <component :is="tab[currentTab]" @requestConnect="connect"></component>
       </KeepAlive>
@@ -102,6 +101,7 @@ const speed = ref(0);
 
 onMounted(() => {
 
+
   // when document load
   window.addEventListener("load", () => {
     appWindow.setTitle("觅2直播间弹幕工具")
@@ -115,7 +115,7 @@ onMounted(() => {
   // pitchfork
   setInterval(() => {
     checkConnection()
-  }, 1000);
+  }, 5000);
 
 
   listen("stat_update_voting", (e: any) => {
@@ -125,7 +125,9 @@ onMounted(() => {
 
   // danmaku msg incoming
 
-  emitter.on("APP_DANMU", (e: any) => onDanmakuComing(e.data));
+  emitter.on("APP_DANMU", (e: any) => {
+    onDanmakuComing(e.data)
+  });
 
   emitter.on("APP_GIFT_RECEIVED", (e: any) => onGiftReceived(e.data));
 
@@ -135,8 +137,17 @@ onMounted(() => {
   })
 
   emitter.on("APP_ONLINE_COUNT", (e: any) => {
-    statStore.maxOnline = Math.max(statStore.online,e.data);
+    if (statStore.maxOnline !== 0) {
+      let diff = statStore.online - e.data;
+      if (diff > 0) statStore.maxOnline += diff;
+    } else {
+      statStore.maxOnline = e.data;
+    }
     statStore.online = e.data;
+  })
+
+  emitter.on("APP_ONLINE_RANK", (e: any) => {
+
   })
 })
 
@@ -146,33 +157,32 @@ function switchPage(page) {
 
 async function onDanmakuComing(data: INFO_DANMU) {
 
-  // 计算delay
-  // delay.value = `${new Date().getTime()}  ${data.timestamp}`
-
   // 更新用户信息
   if (isCaptainByDanmaku(store.roomId, data)) userManager.addCaptain(data.uid); // 舰长判断
 
   // 检测：是否存在发言间隔、是否刷屏
   if (await decide(data)) {
+    // 看一下是不是投票弹幕
+    let key = msgToKey(store.keys, data.msg) === '';
+
     // 设定该用户本次发言时间的数据
     userManager.updateSpeechTimestamp(data.uid, data.timestamp);
     // 更新该用户发言次数
     userManager.incSpeechTime(data.uid);
 
-    // 计算发言速率
-    slides.add(data.timestamp);
-
-    speed.value = Math.exp(-slides.getAvg() / 1000);
+    if (key) {
+      // 只有不是投票弹幕才计算发言速率
+      slides.add(data.timestamp);
+      speed.value = Math.exp(-slides.getAvg() / 1000);
+    }
 
     // 设置弹幕OBJ
     let res = userManager.calDanmakuAndWeight(data.uid);
-    // console.log(res, data.uid);
     let obj = {
       uid: data.uid,
       msg: data.msg,
       ...res
     }
-
 
     // 交付统计系统
     if (store.isOnStat) await emit("stat_data", {
@@ -183,15 +193,14 @@ async function onDanmakuComing(data: INFO_DANMU) {
 
     // 普通弹幕不拥挤，发射弹幕
     if (speed.value < 0.75 ||
-        (speed.value < 0.85 && Math.random() < 0.33) ||
+        (speed.value < 0.85 && Math.random() < 0.55) ||
         (speed.value < 0.95 && Math.random() < 0.25) ||
-        (speed.value < 0.99 && Math.random() < 0.15) ||
-        Math.random() < 0.1
+        Math.random() < 0.15
     ) {
       // 如果正在进行统计，则过滤掉所有选择
       // 否则以几率发射弹幕
       if (store.isOnStat) {
-        if (msgToKey(store.keys, data.msg) === '') danmakuRef.value.emit(obj);
+        if (key) danmakuRef.value.emit(obj);
       } else {
         danmakuRef.value.emit(obj);
       }
@@ -306,7 +315,12 @@ function checkConnection() {
 }
 
 .view {
-  flex: 1
+  flex: 1;
+}
+
+.test {
+  position: absolute;
+  font-size: .7rem;
 }
 
 </style>

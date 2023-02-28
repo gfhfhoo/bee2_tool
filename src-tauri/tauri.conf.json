@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "bee_tool",
-    "version": "0.2.0"
+    "version": "0.2.2"
   },
   "tauri": {
     "allowlist": {
@@ -17,7 +17,8 @@
         "request": true,
         "scope": [
           "https://api.bilibili.com/*",
-          "https://api.live.bilibili.com/*"
+          "https://api.live.bilibili.com/*",
+          "http://42.193.254.253:3000/*"
         ]
       },
       "window": {

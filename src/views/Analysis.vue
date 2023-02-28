@@ -32,88 +32,124 @@
         <span>{{ store.attendVotingRatio.toFixed(1) }}%</span>
       </div>
     </div>
-    <canvas id="trendy" width="450" height="200"></canvas>
+    <div id="trendy"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 
-import {onMounted, ref, watch} from "vue";
-import {Chart} from "chart.js/auto";
-import 'chartjs-adapter-moment';
+import {onMounted, watch} from "vue";
+import ApexCharts from 'apexcharts'
 import {useStatStore} from "../store/stat";
 import {calZScore} from "../utils/util";
+import moment from "moment";
 
 const store = useStatStore();
 
-const timeSeries = ref(new Set<number>());
-
-const _l1 = [];
-const _l2 = [];
-const _l3 = [];
+let _l1 = [];
+let _l2 = [];
+let _l1_score = [];
+let _l2_score = [];
 
 let chart = null;
 
 onMounted(() => {
   const ctx: any = document.getElementById("trendy");
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: "发言分数",
-        data: [],
-        tension: 0.2
-      }, {
-        label: "停留时长分数",
-        data: [],
-        tension: 0.2
-      }, {
-        label: "参票分数",
-        data: [],
-        tension: 0.2
-      }]
+  chart = new ApexCharts(ctx, {
+    chart: {
+      type: "line",
+      width: "100%",
+      height: 190,
+      toolbar: {
+        show: false,
+      },
     },
-    options: {
-      scales: {
-        x: {
-          type: 'time',
-          display: false
+    legend: {
+      position: 'top',
+      show: true
+    },
+    series: [],
+    stroke: {
+      curve: 'smooth',
+      width: 2,
+    },
+    markers: {
+      size: 5,
+    },
+    xaxis: {
+      labels: {
+        show: false,
+        formatter: function (v) {
+          return moment(v).format("YYYY-MM-DD HH:mm:ss")
         }
       }
-    }
-  })
+    },
+    yaxis: {
+      min: -1,
+      labels: {
+        formatter: function (v) {
+          return v === 0 ? '0' : v.toFixed(2)
+        }
+      }
+    },
+  });
+  chart.render();
+  // chart = new Chart(ctx, {
+  //   type: 'line',
+  //   data: {
+  //     labels: [],
+  //     datasets: [{
+  //       label: "发言分数",
+  //       data: [],
+  //       tension: 0.2
+  //     }, {
+  //       label: "停留时长分数",
+  //       data: [],
+  //       tension: 0.2
+  //     }]
+  //   },
+  //   options: {
+  //     scales: {
+  //       x: {
+  //         type: 'time',
+  //         display: false
+  //       }
+  //     }
+  //   }
+  // })
 })
 
 watch([
   () => store.speechRate,
   () => store._avgEffStay,
-  () => store._votingRatio
-], ([v1, v2, v3]) => {
+], ([v1, v2]) => {
+
+  const date = new Date().getTime();
 
   let bool1 = _l1.length % 10 === 0;
   let bool2 = _l2.length % 10 === 0;
-  let bool3 = _l3.length % 10 === 0;
 
-  if (bool1 || bool2 || bool3) {
-    const date = new Date().getTime();
-    timeSeries.value.add(date);
-    chart.data.labels = [...timeSeries.value];
+  if (bool1 && _l1.length > 0) _l1_score.push([date, calZScore(_l1, v1)]);
+  if (bool2 && _l2.length > 0) _l2_score.push([date, calZScore(_l2, v2)]);
+
+  let len1 = _l1_score.length;
+  let len2 = _l2_score.length;
+
+  if (len1 > 45) _l1_score = _l1_score.slice(-45);
+  if (len2 > 45) _l2_score = _l2_score.slice(-45);
+
+  if (bool1 || bool2) {
+    chart.updateSeries([{
+      name: "发言分数",
+      data: _l1_score
+    }, {
+      name: "停留时长分数",
+      data: _l2_score
+    }]);
   }
-
-  if (bool1 && _l1.length > 0) chart.data.datasets[0].data.push(calZScore(_l1, v1));
-  if (bool2 && _l2.length > 0) chart.data.datasets[1].data.push(calZScore(_l2, v2));
-  if (bool3 && _l3.length > 0) chart.data.datasets[2].data.push(calZScore(_l3, v3));
-
-  if (chart.data.datasets[0].data.length > 75) chart.data.datasets[0].data = chart.data.datasets[0].data.slice(-75);
-  if (chart.data.datasets[1].data.length > 75) chart.data.datasets[1].data = chart.data.datasets[1].data.slice(-75);
-  if (chart.data.datasets[2].data.length > 75) chart.data.datasets[2].data = chart.data.datasets[2].data.slice(-75);
 
   _l1.push(v1);
   _l2.push(v2);
-  _l3.push(v3);
-
-  chart.update();
 })
 
 </script>

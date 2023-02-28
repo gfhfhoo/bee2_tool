@@ -15,6 +15,11 @@ use tokio_tungstenite::{
     MaybeTlsStream, WebSocketStream,
 };
 
+use http::Request;
+
+#[derive(Default)]
+pub struct CookieState(pub Mutex<String>);
+
 use std::collections::HashMap;
 
 type Id = u32;
@@ -84,8 +89,25 @@ fn connect<R: Runtime>(
     url: String,
     callback_function: CallbackFn,
     config: Option<ConnectionConfig>,
+    state: State<'_, CookieState>,
 ) -> Result<Id> {
     let id = rand::random();
+
+    // let tmp = tauri::async_runtime::block_on(async {
+    //     return (*state.0.lock().await).clone();
+    // });
+    //
+    // if tmp != "" {
+    //     let req = Request::builder()
+    //         .uri(url)
+    //         .header("Cookie", tmp)
+    //         .body(())
+    //         .unwrap();
+    //     let (ws_stream, _) =
+    //         tauri::async_runtime::block_on(connect_async_with_config(req, config.map(Into::into)))?;
+    // } else {
+    //
+    // }
     let (ws_stream, _) =
         tauri::async_runtime::block_on(connect_async_with_config(url, config.map(Into::into)))?;
 
@@ -165,6 +187,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app| {
             app.manage(ConnectionManager::default());
+            app.manage(CookieState::default());
             Ok(())
         })
         .build()

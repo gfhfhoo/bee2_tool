@@ -19,3 +19,13 @@ ul {
 * {
     font-family: "PingFang SC", "微软雅黑", "Microsoft Sans Serif", serif;
 }
+
+.apexcharts-legend {
+    justify-content: center!important;
+}
+
+/*@keyframes danmaku_roll {*/
+/*    100% {*/
+/*        transform: translateX(var(--transX));*/
+/*    }*/
+/*}*/

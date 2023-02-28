@@ -4,7 +4,7 @@ export class SlideWindow {
     private readonly max: number;
 
     constructor(init: number) {
-        this.slides = new Array(init).fill(new Date().getTime());
+        this.slides = Array(init).fill(new Date().getTime());
         this.ptr = 0;
         this.max = init;
     }

@@ -9,6 +9,7 @@ import Danmaku from "danmaku";
 import {onMounted} from "vue";
 import {UserProperty} from "../api/types";
 import CaptainIconUrl from "../assets/icon-l-3.402ac8f.png"
+import FireIconUrl from "../assets/87513-fire-4_1.gif"
 
 let danmaku: Danmaku;
 
@@ -58,9 +59,27 @@ function basicEmit(msg) {
   })
 }
 
+function rankingEmit(msg) {
+  danmaku.emit({
+    render(): HTMLElement {
+      let div = document.createElement("div");
+      let img = document.createElement("img");
+      let span = document.createElement("span");
+      img.src = FireIconUrl;
+      span.innerText = msg;
+      div.setAttribute("class", "danmaku-basic-override danmaku-ranking");
+      img.setAttribute("class", "danmaku-fire");
+      div.appendChild(img);
+      div.appendChild(span);
+      return div;
+    }
+  })
+}
+
 function emit(obj) {
   switch (obj.property) {
     case UserProperty.NormalUser:
+      // rankingEmit(obj.msg);
       basicEmit(obj.msg);
       break;
     case UserProperty.Giver:
@@ -68,6 +87,9 @@ function emit(obj) {
       break;
     case UserProperty.Captain:
       captainEmit(obj.msg)
+      break;
+    case UserProperty.RankingUser:
+      rankingEmit(obj.msg);
       break;
   }
 }
@@ -97,16 +119,16 @@ defineExpose({
 #danmaku_wrapper {
   width: 95%;
   height: 95%;
-  line-height: 15px;
+  line-height: 18px;
 }
 
 .danmaku-basic {
   position: relative;
   color: white;
   margin-top: 3px;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
-  -webkit-text-stroke: 1px black;
+  text-shadow: 1px 0 1px #000, 0 1px 1px #000, 0 -1px 1px #000, -1px 0 1px #000;
 }
 
 .danmaku-colorful {
@@ -119,11 +141,21 @@ defineExpose({
   margin-right: 5px;
 }
 
+.danmaku-fire {
+  position: absolute;
+  width: 35px;
+  height: 35px;
+  margin-right: 5px;
+  left: -8px;
+  top: -1px;
+}
+
 .danmaku-basic-override {
   position: relative;
   color: white;
   margin-top: 3px;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .danmaku-captain {
@@ -143,6 +175,15 @@ defineExpose({
   background-size: 200%;
   border-radius: 8px;
   animation: rainbow 2s linear infinite;
+}
+
+.danmaku-ranking {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  //border: 1px solid red;
+  padding: 5px 5px 5px 20px;
 }
 
 @keyframes rainbow {

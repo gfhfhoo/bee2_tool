@@ -66,7 +66,8 @@ export interface MessageConfig {
 export enum UserProperty {
     NormalUser,
     Giver,
-    Captain
+    Captain,
+    RankingUser
 }
 
 export interface CaptainInfo {

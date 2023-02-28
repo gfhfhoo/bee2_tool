@@ -26,6 +26,7 @@ export const useConfigStore = defineStore('config', {
             keys: [],
             filterManager: new FilterManager(),
             specialDanmakuSwitch: false,
+            rankingSwitch: false,
             captainConfig: {
                 status: false,
                 votingWeight: 2,

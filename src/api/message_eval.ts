@@ -43,5 +43,16 @@ emitter.on("SUPER_CHAT_MESSAGE", (e: any) => {
 
 emitter.on("ONLINE_RANK_COUNT", (e: any) => {
     const data = e.data.data;
-    emitter.emit("APP_ONLINE_COUNT",{data:data.count});
+    emitter.emit("APP_ONLINE_COUNT", {data: data.count});
+})
+
+emitter.on("ONLINE_RANK_V2", (e: any) => {
+    const data = e.data.data.list;
+    let map = new Map<number, number>();
+
+    for (let el of data) {
+        map.set(el.uid, el.rank);
+    }
+
+    emitter.emit("APP_ONLINE_RANK", {data: map});
 })

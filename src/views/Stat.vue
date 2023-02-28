@@ -11,7 +11,7 @@
            :style="{width: `${width}px`,height: `${height}px`}">
         <span>{{ tipBoardText }}</span>
       </div>
-      <div class="legend" v-show="tipBoardText === '等待弹幕'">
+      <div class="legend" v-show="tipBoardText=== '等待弹幕'">
         <marquee-text class="marquee" :repeat="5" :key="legend.toString()">
           <span>投票关键字：{{ KeysStr }}</span>
         </marquee-text>
@@ -40,9 +40,6 @@
 
 <script setup lang="ts">
 import {computed, onMounted, reactive, ref, watch} from "vue";
-import {Chart} from "chart.js/auto";
-import {Colors} from "chart.js";
-import ChartDataLabels from 'chartjs-plugin-datalabels';
 import {appWindow} from "@tauri-apps/api/window";
 import {emit, listen} from "@tauri-apps/api/event";
 import {msgToKey} from "../utils/util";
@@ -50,6 +47,9 @@ import {STAT_PAYLOAD} from "../api/types";
 import gsap from "gsap";
 import Countdown from "../components/tiny/Countdown.vue";
 import MarqueeText from 'vue-marquee-text-component'
+import {Chart} from "chart.js/auto";
+import {Colors} from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 type K = {
   key: string,
@@ -89,6 +89,7 @@ onMounted(() => {
   })
 
   listen("stat_start", (e: any) => {
+    clear();
     tipBoardText.value = "等待弹幕"
     maxCountdownNum.value = e.payload.countdown;
     if (maxCountdownNum.value !== -1) {
@@ -100,11 +101,6 @@ onMounted(() => {
   })
 
   listen("stat_stop", () => {
-    tail();
-  })
-
-  listen("stat_clear", () => {
-    clear();
     tail();
   })
 
@@ -125,7 +121,6 @@ onMounted(() => {
       calAndSet();
     }
   })
-
   Chart.register([ChartDataLabels, Colors]);
   ctx = document.getElementById("chart");
   init();
@@ -133,7 +128,6 @@ onMounted(() => {
 
 function startCountdown() {
   // 回收状态
-  // opacity.value = 1;
   backward();
   countDownControl.value = true;
   isEndVoting.value = false;
@@ -147,9 +141,8 @@ async function onEnd() {
 
 function tail() {
   countDownControl.value = false;
-  isEndVoting.value = true
+  isEndVoting.value = true;
   tipBoardText.value = "等待投票开始";
-  // opacity.value = 0;
   expand();
 }
 
@@ -168,15 +161,14 @@ function init() {
   }
 
   chart = new Chart(ctx, {
-    plugins: [ChartDataLabels],
     type: 'pie',
     data: {
       datasets: [
         {
-          data: [2, 3]
+          data: []
         }
       ],
-      labels: ["hello", "world"]
+      labels: []
     },
     options: {
       responsive: true,
@@ -333,6 +325,7 @@ const KeysStr = computed(() => {
   width: 100%;
   height: 100%;
   z-index: 99989;
+  pointer-events: none;
 }
 
 .result {
