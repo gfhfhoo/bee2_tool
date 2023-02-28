@@ -120,7 +120,7 @@ onMounted(() => {
 
   listen("stat_update_voting", (e: any) => {
     statStore.incAccVotingDanmaku();
-    userManager.incVotingTime(e.data);
+    userManager.incVotingTime(e.payload.data);
   })
 
   // danmaku msg incoming
@@ -140,6 +140,7 @@ onMounted(() => {
     if (statStore.maxOnline !== 0) {
       let diff = statStore.online - e.data;
       if (diff > 0) statStore.maxOnline += diff;
+      else statStore.maxOnline -= diff
     } else {
       statStore.maxOnline = e.data;
     }

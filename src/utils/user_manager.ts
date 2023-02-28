@@ -37,12 +37,18 @@ export class UserManager {
             const now = this._votingTimeMap.get(uid);
             this._votingTimeMap.set(uid, now + 1);
             this._maxVotingTimes = Math.max(now + 1, this._maxVotingTimes);
-        } else this._votingTimeMap.set(uid, 1);
-
-        let totalTicket = Array.from(this._votingTimeMap.values()).reduce((p, v) => p + v, 0);
+        } else {
+            this._votingTimeMap.set(uid, 1)
+            this._maxVotingTimes = Math.max(1, this._maxVotingTimes);
+        }
+        ;
 
         // update calculating rule
-        this.statStore._votingRatio = totalTicket / (this._maxVotingTimes * this.statStore.maxOnline);
+        console.log((this._maxVotingTimes))
+        console.log(this.statStore._votingRatio)
+        if (this._maxVotingTimes !== 0) {
+            this.statStore._votingRatio = this.statStore._votingDanmaku / (this._maxVotingTimes * this.statStore.maxOnline);
+        }
     }
 
     incSpeechTime(uid: number) {
@@ -51,12 +57,11 @@ export class UserManager {
             this._speechTimeMap.set(uid, now + 1);
         } else this._speechTimeMap.set(uid, 1);
 
-        let keySum = 0, valueSum = 0;
+        let valueSum = 0;
         for (let value of this._speechTimeMap.values()) {
-            keySum++;
             valueSum += value;
         }
-        this.statStore.speechedNum = keySum;
+        this.statStore.speechedNum = this._speechTimeMap.size;
         this.statStore.speechedTime = valueSum;
     }
 
