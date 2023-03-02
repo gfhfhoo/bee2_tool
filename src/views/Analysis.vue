@@ -85,7 +85,6 @@ onMounted(() => {
       }
     },
     yaxis: {
-      min: -1,
       labels: {
         formatter: function (v) {
           return v === 0 ? '0' : v.toFixed(2)

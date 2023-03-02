@@ -41,11 +41,8 @@ export class UserManager {
             this._votingTimeMap.set(uid, 1)
             this._maxVotingTimes = Math.max(1, this._maxVotingTimes);
         }
-        ;
 
         // update calculating rule
-        console.log((this._maxVotingTimes))
-        console.log(this.statStore._votingRatio)
         if (this._maxVotingTimes !== 0) {
             this.statStore._votingRatio = this.statStore._votingDanmaku / (this._maxVotingTimes * this.statStore.maxOnline);
         }
