@@ -3,8 +3,8 @@
     <img class="author_img" src="../assets/92417d0ac583e5b9f69dabfe9212ab2e060cd30a.jpg@240w_240h_1c_1s.webp">
     <p class="author">作者：clay_ex</p>
     <p>本工具仅限 @觅2 使用</p>
-    <p class="version">Ver 0.2.3</p>
-    <p class="update_time">Updated at Mar 2, 2023</p>
+    <p class="version">Ver 0.2.4</p>
+    <p class="update_time">Updated at Mar 3, 2023</p>
   </div>
 </template>
 

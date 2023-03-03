@@ -37,8 +37,8 @@ enum Error {
 
 impl Serialize for Error {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         serializer.serialize_str(self.to_string().as_str())
     }
@@ -93,23 +93,27 @@ fn connect<R: Runtime>(
 ) -> Result<Id> {
     let id = rand::random();
 
-    // let tmp = tauri::async_runtime::block_on(async {
-    //     return (*state.0.lock().await).clone();
-    // });
-    //
-    // if tmp != "" {
-    //     let req = Request::builder()
-    //         .uri(url)
-    //         .header("Cookie", tmp)
-    //         .body(())
-    //         .unwrap();
-    //     let (ws_stream, _) =
-    //         tauri::async_runtime::block_on(connect_async_with_config(req, config.map(Into::into)))?;
-    // } else {
-    //
-    // }
-    let (ws_stream, _) =
-        tauri::async_runtime::block_on(connect_async_with_config(url, config.map(Into::into)))?;
+    let tmp = tauri::async_runtime::block_on(async {
+        return (*state.0.lock().await).clone();
+    });
+    let mut bool = false;
+    let req: Request<()>;
+
+    bool = tmp != "";
+
+    let (ws_stream, _) = match bool {
+        true => {
+            req = Request::builder()
+            .uri(&url)
+            .header("Cookie", tmp)
+            .body(())
+            .unwrap();
+            tauri::async_runtime::block_on(connect_async_with_config(req, config.map(Into::into)))?
+        }
+        false => {
+            tauri::async_runtime::block_on(connect_async_with_config(url, config.map(Into::into)))?
+        }
+    };
 
     tauri::async_runtime::spawn(async move {
         let (write, read) = ws_stream.split();
@@ -141,7 +145,7 @@ fn connect<R: Runtime>(
                             code: v.code.into(),
                             reason: v.reason.into_owned(),
                         })))
-                            .unwrap()
+                        .unwrap()
                     }
                     Ok(Message::Frame(_)) => serde_json::Value::Null, // This value can't be recieved.
                     Err(e) => serde_json::to_value(Error::from(e)).unwrap(),
@@ -151,7 +155,7 @@ fn connect<R: Runtime>(
                 let _ = window_.eval(js.as_str());
             }
         })
-            .await;
+        .await;
     });
 
     Ok(id)

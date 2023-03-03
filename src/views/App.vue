@@ -164,14 +164,14 @@ async function onDanmakuComing(data: INFO_DANMU) {
   // 检测：是否存在发言间隔、是否刷屏
   if (await decide(data)) {
     // 看一下是不是投票弹幕
-    let key = msgToKey(store.keys, data.msg) === '';
+    let nullKey = msgToKey(store.keys, data.msg) === '';
 
     // 设定该用户本次发言时间的数据
     userManager.updateSpeechTimestamp(data.uid, data.timestamp);
     // 更新该用户发言次数
     userManager.incSpeechTime(data.uid);
 
-    if (key) {
+    if (nullKey) {
       // 只有不是投票弹幕才计算发言速率
       slides.add(data.timestamp);
       speed.value = Math.exp(-slides.getAvg() / 1000);
@@ -198,13 +198,9 @@ async function onDanmakuComing(data: INFO_DANMU) {
         (speed.value < 0.95 && Math.random() < 0.25) ||
         Math.random() < 0.15
     ) {
-      // 如果正在进行统计，则过滤掉所有选择
+      // 无论是否正在进行统计，过滤掉所有关键字弹幕
       // 否则以几率发射弹幕
-      if (store.isOnStat) {
-        if (key) danmakuRef.value.emit(obj);
-      } else {
-        danmakuRef.value.emit(obj);
-      }
+      if (nullKey) danmakuRef.value.emit(obj);
     }
   }
 }
