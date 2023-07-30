@@ -29,7 +29,7 @@
     "mitt": "^3.0.0",
     "moment": "^2.29.4",
     "pinia": "^2.0.30",
-    "protobufjs": "^7.2.2",
+    "protobufjs": "^7.2.4",
     "sass": "^1.58.1",
     "tauri-plugin-websocket-api": "https://github.com/tauri-apps/tauri-plugin-websocket",
     "textfit": "^2.4.0",

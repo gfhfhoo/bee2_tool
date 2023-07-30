@@ -12,6 +12,9 @@ export const useStatStore = defineStore('stat', {
             speechedTime: 0, // 发言过的次数
             _avgEffStay: 0, // 平均停留时长
             _votingRatio: 0,
+
+            // internal data
+            internal_voting_map: null,
         }
     },
     actions: {

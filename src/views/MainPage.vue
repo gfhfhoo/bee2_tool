@@ -82,8 +82,11 @@ import {useConfigStore} from "../store/config";
 import {onBeforeUnmount, onMounted, ref, watch} from "vue";
 import {emit, listen, TauriEvent} from "@tauri-apps/api/event";
 import {appWindow, WebviewWindow} from "@tauri-apps/api/window";
+import {useStatStore} from "../store/stat";
+import {mapToJSON} from "../utils/util";
 
 const store = useConfigStore();
+const statStore = useStatStore();
 const $$emit = defineEmits(['requestConnect'])
 let statWindow: any;
 
@@ -114,6 +117,10 @@ async function startStat() {
 function stopStat() {
   store.isOnStat = false;
   emit("stat_stop", {});
+
+  emit("stat_player_data_stat", {
+    map: mapToJSON<number, number>(store.transformer.before)
+  });
 }
 
 

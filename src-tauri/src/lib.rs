@@ -17,8 +17,14 @@ use tokio_tungstenite::{
 
 use http::Request;
 
+#[derive(Default, Clone)]
+pub struct MyOption {
+    pub cookie: String,
+    pub web_key: String,
+}
+
 #[derive(Default)]
-pub struct CookieState(pub Mutex<String>);
+pub struct OptionState(pub Mutex<MyOption>);
 
 use std::collections::HashMap;
 
@@ -83,36 +89,42 @@ enum WebSocketMessage {
     Close(Option<CloseFrame>),
 }
 
+fn proxy_http(url: String, cookie: String, web_key: String) -> Result<Request<()>> {
+    let req = Request::get(url)
+    .header("Cookie", cookie)
+    .header("Sec-WebSocket-Key", web_key)
+    .header("Connection", "Upgrade")
+    .header("Upgrade", "websocket")
+    .header("Origin", "https://live.douyin.com")
+    .header("Sec-WebSocket-Version", "13")
+    .header("Host", "webcast3-ws-web-hl.douyin.com")
+    .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36")
+    .body(()).unwrap();
+
+    Ok(req)
+}
+
 #[tauri::command]
-fn connect<R: Runtime>(
+async fn connect<R: Runtime>(
     window: Window<R>,
     url: String,
     callback_function: CallbackFn,
     config: Option<ConnectionConfig>,
-    state: State<'_, CookieState>,
+    state: State<'_, OptionState>,
 ) -> Result<Id> {
     let id = rand::random();
 
-    let tmp = tauri::async_runtime::block_on(async {
-        return (*state.0.lock().await).clone();
-    });
-    let mut bool = false;
-    let req: Request<()>;
+    let opt = (*state.0.lock().await).clone();
 
-    bool = tmp != "";
-
-    let (ws_stream, _) = match bool {
+    let (ws_stream, _) = match opt.cookie != "" {
         true => {
-            req = Request::builder()
-            .uri(&url)
-            .header("Cookie", tmp)
-            .body(())
-            .unwrap();
-            tauri::async_runtime::block_on(connect_async_with_config(req, config.map(Into::into)))?
+            let req = proxy_http(url, opt.cookie, opt.web_key)?;
+            match connect_async_with_config(req, config.map(Into::into)).await {
+                Ok(v) => v,
+                Err(e) => return Err(Error::Websocket(e)),
+            }
         }
-        false => {
-            tauri::async_runtime::block_on(connect_async_with_config(url, config.map(Into::into)))?
-        }
+        false => connect_async_with_config(url, config.map(Into::into)).await?,
     };
 
     tauri::async_runtime::spawn(async move {
@@ -191,7 +203,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(tauri::generate_handler![connect, send])
         .setup(|app| {
             app.manage(ConnectionManager::default());
-            app.manage(CookieState::default());
+            app.manage(OptionState::default());
             Ok(())
         })
         .build()

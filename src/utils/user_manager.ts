@@ -32,6 +32,10 @@ export class UserManager {
         this._onlineRankingMap = new Map<number, number>();
     }
 
+    getVotingMap() {
+        return this._votingTimeMap;
+    }
+
     incVotingTime(uid: number) {
         if (this._votingTimeMap.has(uid)) {
             const now = this._votingTimeMap.get(uid);

@@ -34,6 +34,17 @@
         </svg>
         参与度分析
       </div>
+<!--      <div class="item" :class="{item_clicked: currentTab==='config'}" @click="switchPage('Config')">-->
+<!--        <svg class="svg_icon" viewBox="0 0 1024 1024">-->
+<!--          <path-->
+<!--              d="M512 1024L68.338225 767.821104V256.178896L512 0l443.661775 256.178896v511.642208zM211.454927 685.529001L512 858.70021l300.545073-173.171209V338.470999L512 165.29979 211.454927 338.470999z"-->
+<!--          ></path>-->
+<!--          <path-->
+<!--              d="M512 511.642208m-143.116702 0a143.116702 143.116702 0 1 0 286.233404 0 143.116702 143.116702 0 1 0-286.233404 0Z"-->
+<!--          ></path>-->
+<!--        </svg>-->
+<!--        更多配置-->
+<!--      </div>-->
       <div class="item" :class="{item_clicked: currentTab==='About'}"
            @click="switchPage('About')">
         <svg class="svg_icon" viewBox="0 0 1024 1024">
@@ -45,7 +56,7 @@
       </div>
     </div>
     <div class="view">
-      <span class="test" v-if="currentTab==='MainPage'">弹幕密集度: {{ speed.toFixed(4) }}</span>
+      <!--      <span class="test" v-if="currentTab==='MainPage'">弹幕密集度: {{ speed.toFixed(4) }}</span>-->
       <KeepAlive>
         <component :is="tab[currentTab]" @requestConnect="connect"></component>
       </KeepAlive>
@@ -73,14 +84,20 @@ import VoteCountingSettings from "./VoteCountingSettings.vue";
 import {useConfigStore} from "../store/config";
 import About from "./About.vue";
 import Analysis from "./Analysis.vue";
+import Config from "./Config.vue";
 import {useStatStore} from "../store/stat";
+import {invoke} from "@tauri-apps/api";
+
+
+import protoUrl from "../assets/model.proto?url"
 
 
 const tab = {
   MainPage,
   VoteCountingSettings,
   Analysis,
-  About
+  About,
+  Config
 }
 
 const currentTab = ref("MainPage");
@@ -100,7 +117,6 @@ let userManager: UserManager;
 const speed = ref(0);
 
 onMounted(() => {
-
 
   // when document load
   window.addEventListener("load", () => {
@@ -123,6 +139,12 @@ onMounted(() => {
     userManager.incVotingTime(e.payload.data);
   })
 
+  // internal emitter
+
+  emitter.on("INTER_GET_VOTING_MAP",(e:any)=>{
+    statStore.internal_voting_map = userManager.getVotingMap();
+  })
+
   // danmaku msg incoming
 
   emitter.on("APP_DANMU", (e: any) => {
@@ -140,7 +162,7 @@ onMounted(() => {
     if (statStore.maxOnline !== 0) {
       let diff = statStore.online - e.data;
       if (diff > 0) statStore.maxOnline += diff;
-      else statStore.maxOnline -= diff
+      else statStore.maxOnline -= diff;
     } else {
       statStore.maxOnline = e.data;
     }
@@ -256,7 +278,17 @@ async function connect() {
     return;
   }
   // 没有新的连接，直接连接
-  instance = new BilibiliWebsocket(store.shortRoomId);
+  instance = new BilibiliWebsocket(store.shortRoomId, protoUrl);
+
+  let p = `/room_${store.roomId}.json`;
+
+  let content: string = await invoke("read_data", {
+    src: p
+  });
+
+  store.transformer.load(content);
+
+
   checkConnection();
 }
 

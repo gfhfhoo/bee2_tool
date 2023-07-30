@@ -22,6 +22,16 @@
     </div>
     <Transition name="opacity">
       <div class="result" v-show="isEndVoting">
+        <!--        PK-->
+<!--        <div class="pk" v-if="danmaku.length>0">-->
+<!--          <div class="l_p">-->
+<!--            <div class="old_players" :style="{width: `${oldPlayerRatio}%`}"></div>-->
+<!--          </div>-->
+<!--          <div class="r_p">-->
+<!--            <div class="new_players" :style="{width: `${newPlayerRatio}%`}"></div>-->
+<!--          </div>-->
+<!--          <div class="text"></div>-->
+<!--        </div>-->
         <div>
           <p class="alarm">⏳</p>
           <span>投票结果</span>
@@ -42,7 +52,7 @@
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {appWindow} from "@tauri-apps/api/window";
 import {emit, listen} from "@tauri-apps/api/event";
-import {msgToKey} from "../utils/util";
+import {JSONToMap, msgToKey} from "../utils/util";
 import {STAT_PAYLOAD} from "../api/types";
 import gsap from "gsap";
 import Countdown from "../components/tiny/Countdown.vue";
@@ -79,6 +89,9 @@ const isEndVoting = ref(false);
 const mostOfVoteRatio = ref(0);
 const mostOfVoteKey = ref("");
 
+const oldPlayerRatio = ref(0);
+const newPlayerRatio = ref(100);
+
 const tipBoardText = ref("等待投票开始");
 
 onMounted(() => {
@@ -86,6 +99,11 @@ onMounted(() => {
   // bind `windows close` event
   document.getElementById("window_close").addEventListener('click', () => {
     appWindow.close();
+  })
+
+  listen("stat_player_data_stat", (e: any) => {
+    console.log(e.payload)
+    doPlayerStat(JSONToMap<number, number>(e.payload.map));
   })
 
   listen("stat_start", (e: any) => {
@@ -152,6 +170,24 @@ function expand() {
 
 function backward() {
   radius.value = 200;
+}
+
+function doPlayerStat(data: Map<number, number>) {
+  console.log(data)
+  let newPlayer = 0;
+  let oldPlayer = 0;
+
+  for (let entry of voteMap.entries()) {
+    if (data.has(entry[0]) && data.get(entry[0]) >= 3) {
+      oldPlayer++;
+    } else {
+      newPlayer++;
+    }
+  }
+
+  console.log(newPlayer, oldPlayer, newPlayer + oldPlayer === voteMap.size);
+  oldPlayerRatio.value = oldPlayer / (newPlayer + oldPlayer) * 100;
+  newPlayerRatio.value = newPlayer / (newPlayer + oldPlayer) * 100;
 }
 
 function init() {
@@ -335,6 +371,45 @@ const KeysStr = computed(() => {
   text-align: center;
   z-index: 99999;
 
+  .pk {
+    position: relative;
+
+    .l_p, .r_p {
+      position: absolute;
+      width: 100%;
+      height: 20px;
+    }
+
+    .l_p {
+      text-align: right;
+    }
+
+    .r_p {
+      text-align: left;
+    }
+
+    .old_players, .new_players {
+      display: inline-block;
+      height: 100%;
+    }
+
+    .old_players {
+      background: rgb(234, 71, 102);
+      background: linear-gradient(90deg, rgba(234, 71, 102, 1) 0%, rgba(190, 83, 234, 1) 100%);
+      transition: width ease-in-out .8s;
+    }
+
+    .new_players {
+      background: rgb(139, 225, 249);
+      background: linear-gradient(90deg, rgba(139, 225, 249, 1) 0%, rgba(56, 86, 230, 1) 100%);
+      transition: width ease-in-out .8s;
+    }
+
+    .text {
+      position: absolute;
+    }
+  }
+
   .alarm {
     font-size: 4rem;
     margin-top: 20px;
@@ -359,6 +434,7 @@ const KeysStr = computed(() => {
     font-size: 1rem;
     margin-bottom: 10px;
   }
+
 
   .percent {
     font-size: 1rem;

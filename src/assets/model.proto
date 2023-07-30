@@ -1,0 +1,149 @@
+syntax = "proto3";
+
+message SimpleUser {
+  string face = 4;
+}
+
+message SimpleDm {
+  SimpleUser user = 20;
+}
+
+message Bubble {
+  int32 id = 1;
+  string color = 2;
+  int32 id_v2 = 3;
+}
+
+message Medal {
+  int32 level = 1;
+  string name = 2;
+  string special = 3;
+  int32 color = 4;
+  int32 icon_id = 5;
+  int32 border_color = 6;
+  int32 gradient_start_color = 7;
+  int32 gradient_end_color = 8;
+  int32 privilege = 9;
+  int32 light = 10;
+}
+
+message UserLevel {
+  int32 level = 1;
+  int32 color = 2;
+  string ran = 3;
+  int32 online_rank = 4;
+}
+
+message Title {
+  string title = 1;
+  string old_title = 2;
+}
+
+message Identify {
+  string beginning_url = 1;
+  string ending_url = 2;
+  string jump_to_url = 3;
+}
+
+message Wealth {
+  int32 level = 1;
+}
+
+message User {
+  int32 uid = 1;
+  string name = 2;
+  string name_color = 3;
+  string face = 4;
+  int32 vip = 5;
+  int32 svip = 6;
+  int32 rank = 7;
+  int32 mobile_verify = 8;
+  int32 lpl_status = 9;
+  int32 attr = 10;
+  Medal medal = 11;
+  UserLevel level = 12;
+  Title title = 13;
+  Identify identify = 14;
+  Wealth wealth = 15;
+}
+
+
+message Room {
+  int32 uid = 1;
+  string name = 2;
+  int32 real_room_id = 3;
+}
+
+message Emoticon {
+  string unique = 1;
+  string url = 2;
+  bool is_dynamic = 3;
+  int32 in_player_area = 4;
+  int32 bulge_display = 5;
+  int32 height = 6;
+  int32 width = 7;
+}
+
+message EmoticonMapEntry {
+  int32 key = 1;
+  Emoticon value = 2;
+}
+
+message Voice {
+  string url = 1;
+  string file_format = 2;
+  string text = 3;
+  int32 file_duration = 4;
+  string file_id = 5;
+}
+
+message Aggregation {
+  bool is_aggregation = 1;
+  int32 activity_source = 2;
+  string activity_identity = 3;
+  int32 not_show = 4;
+}
+
+message Check {
+  string token = 1;
+  int32 ts = 2;
+}
+
+message Prefix {
+  int32 type = 1;
+  string resource = 2;
+}
+
+message Icon {
+  Prefix prefix = 1;
+}
+
+message Dm {
+  string id_str = 1;
+  int32 mode = 2;
+  int32 fontsize = 3;
+  uint32 color = 4;
+  string mid_hash = 5;
+  string content = 6;
+  int32 ctime = 7;
+  int32 weight = 8;
+  int32 rnd = 9;
+  int32 attr = 10;
+
+  int32 biz_scene = 11;
+  Bubble bubble = 12;
+
+  int32 dm_type = 13;
+  repeated EmoticonMapEntry emoticons = 14;
+  Voice voice = 15;
+  string animation = 16;
+  Aggregation aggregation = 17;
+
+  bool send_from_me = 18;
+
+  Check check = 19;
+  User user = 20;
+  Room room = 21;
+
+  //  Icon icon = 22;
+}

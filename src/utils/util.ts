@@ -1,6 +1,35 @@
 import {invoke} from "@tauri-apps/api";
 import {CaptainInfo, INFO_DANMU} from "../api/types";
 import {get} from "../api/api";
+import {fromBase64} from "js-base64";
+
+export const V2ToJson = function (v2: string) {
+    try {
+        let jString = fromBase64(v2);
+
+    } catch (ex) {
+        console.log(ex)
+    }
+
+}
+
+export const mapToJSON = function <K, V>(map: Map<K, V>) {
+    let obj = Object.create(null);
+    for (let key of map.keys()) {
+        obj[key] = map.get(key);
+    }
+
+    return JSON.stringify(obj);
+}
+
+export const JSONToMap = function <K, V>(str: string) {
+    let obj = JSON.parse(str);
+    let map = new Map<K, V>();
+    for (let key of Object.keys(obj)) {
+        map.set(key as K, obj[key] as V);
+    }
+    return map
+}
 
 export const calZScore = (li: number[], x: number): number => {
     const n = li.length;

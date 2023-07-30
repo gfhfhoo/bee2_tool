@@ -1,13 +1,29 @@
 import {emitter} from "./emitter";
 import {INFO_DANMU, INFO_GIFT} from "./types";
+import {Root} from "protobufjs";
+import {fromBase64} from "js-base64";
+
+function strToUint8(str: string) {
+    let bytes = [];
+    for (let i = 0; i < str.length; i++) {
+        let abyte = str.charCodeAt(i) & 0xff;
+        bytes.push(abyte);
+    }
+    return new Uint8Array(bytes);
+}
+
+function uint8ToStr(bytes: Uint8Array) {
+    let decoder = new TextDecoder();
+    return decoder.decode(bytes);
+}
 
 emitter.on("ROOM_ID", (e: any) => {
     emitter.emit("APP_ROOM_ID_UPDATE", {data: e.data});
 })
 
 emitter.on("DANMU_MSG", (e: any) => {
+    // const root: Root = e.root; // protobuf
     const data = e.data.info;
-    // console.log(data)
     const danmu: INFO_DANMU = {
         uid: data[2][0],
         uname: data[2][1],
@@ -21,6 +37,7 @@ emitter.on("DANMU_MSG", (e: any) => {
             roomId: data[3][3] // real room id
         }
     }
+    console.log(danmu)
     emitter.emit("APP_DANMU", {data: danmu});
 })
 

@@ -26,6 +26,9 @@
         "setTitle": true,
         "create": true,
         "close": true
+      },
+      "path": {
+        "all": true
       }
     },
     "bundle": {

@@ -1,5 +1,5 @@
 <template>
-  <div class="btn">
+  <div class="ios_btn">
     <label :for="hash">
       <input type="checkbox" :id="hash" :checked="checked" @change="$emit('update:checked', !checked)">
       <span class="wrapper"></span>

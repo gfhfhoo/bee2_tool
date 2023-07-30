@@ -2,6 +2,7 @@ import {emitter} from "./emitter";
 import {get} from "./api";
 import {BrotliDecode} from "../utils/decode"
 import WebSocket from "tauri-plugin-websocket-api";
+import {load, Root} from "protobufjs";
 
 interface Packet {
     packetLen?: number
@@ -185,15 +186,20 @@ export class BilibiliWebsocket {
     private readonly _roomId: string;
     private readonly _affairId: number;
     private realRoomId: string;
+    private roomOwner: number;
     private key: string;
     private host: string;
     private instance: WebSocket;
     private timer: any;
     private _connected: boolean;
 
-    constructor(roomId: string) {
+    private protoUrl: string;
+    private root: Root;
+
+    constructor(roomId: string, proto: string) {
         this._roomId = roomId;
         this._affairId = parseInt((Math.random() * 1e6).toFixed(0));
+        this.protoUrl = proto
         this.connect()
         emitter.on("WS_BREAK", (e: any) => {
             this.fail(e.id);
@@ -204,6 +210,7 @@ export class BilibiliWebsocket {
         const url0 = `https://api.live.bilibili.com/room/v1/Room/room_init?id=${this._roomId}`;
         const data0 = await get(url0).then(res => res.data);
         this.realRoomId = data0['room_id'];
+        this.roomOwner = data0['uid'];
         emitter.emit("ROOM_ID", {data: this.realRoomId});
         const url1 = `https://api.live.bilibili.com/room/v1/Danmu/getConf?room_id=${this.realRoomId}&platform=pc&player=web`
         const data1 = await get(url1).then(res => res.data);
@@ -213,13 +220,14 @@ export class BilibiliWebsocket {
 
     async verify() {
         let cert = {
-            'uid': 0,
+            'uid': this.roomOwner,
             "roomid": this.realRoomId,
             "protover": 3,
             "platform": "web",
             "type": 2,
             "key": this.key
         }
+        console.log(cert)
         await this.instance.send(getCertification(JSON.stringify(cert)));
         this.timer = setInterval(() => {
             let buff = new ArrayBuffer(16);
@@ -234,6 +242,7 @@ export class BilibiliWebsocket {
     }
 
     async connect() {
+        this.root = await load(this.protoUrl);
         await this.getConfig();
         this.instance = await WebSocket.connect(`wss://${this.host}/sub`);
         this.instance.addListener((e: any) => {
@@ -244,7 +253,7 @@ export class BilibiliWebsocket {
             if (res.op === 5) {
                 let arr = res.body[0];
                 for (let j = 0; j < arr.length; ++j) {
-                    emitter.emit(arr[j].cmd, {affairId: this._affairId, data: arr[j]});
+                    emitter.emit(arr[j].cmd, {root: this.root, affairId: this._affairId, data: arr[j]});
                 }
             }
         })

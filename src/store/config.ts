@@ -6,6 +6,7 @@ import {
     RULE_LIMIT_REPEAT_DANMU_BY_NORMAL,
     RULE_LIMIT_REPEAT_DANMU_BY_PARTICIPLE, RULE_LIMIT_SAME_USER_DANMU
 } from "../utils/util";
+import {DataTransformer} from "../utils/data_transformer";
 
 export const useConfigStore = defineStore('config', {
     state: () => {
@@ -40,7 +41,9 @@ export const useConfigStore = defineStore('config', {
                 status: false,
                 triggerThresh: 50,
                 votingWeight: 2
-            } as MessageConfig
+            } as MessageConfig,
+            showPlayerData: false,
+            transformer: new DataTransformer(),
         }
     },
     actions: {
